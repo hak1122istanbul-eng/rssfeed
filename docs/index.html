@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KDI 정책자료 아카이브</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans antialiased transition-colors duration-300 dark:bg-gray-900 dark:text-gray-100">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Header -->
+        <header class="mb-8 p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+                <h1 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white flex items-center gap-2">
+                    <i data-lucide="library" class="w-8 h-8 text-blue-600 dark:text-blue-400"></i>
+                    KDI 정책자료 아카이브
+                </h1>
+                <p class="mt-2 text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                    <i data-lucide="info" class="w-4 h-4"></i>
+                    KDI 경제정보센터 RSS 누적 (<span id="total-count">0</span>건)
+                </p>
+            </div>
+            <div class="flex items-center gap-3">
+                <span class="text-xs text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-700 px-3 py-1.5 rounded-full" id="last-updated">업데이트: -</span>
+                <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                    <i data-lucide="moon" class="w-5 h-5 text-gray-600 dark:text-gray-300"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            <!-- Sidebar (Filters & Stats) -->
+            <aside class="lg:col-span-1 flex flex-col gap-6">
+                <!-- Filters Panel -->
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-5 sticky top-6">
+                    <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
+                        <i data-lucide="filter" class="w-5 h-5"></i> 필터
+                    </h2>
+                    
+                    <!-- Search -->
+                    <div class="mb-5 relative">
+                        <i data-lucide="search" class="w-4 h-4 absolute left-3 top-3 text-gray-400"></i>
+                        <input type="text" id="search-input" placeholder="검색어 입력..." 
+                            class="w-full pl-9 pr-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all dark:text-white">
+                    </div>
+
+                    <!-- Categories -->
+                    <div class="mb-5">
+                        <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">카테고리</h3>
+                        <div id="category-filters" class="flex flex-wrap gap-2">
+                            <!-- Categories will be rendered here -->
+                        </div>
+                    </div>
+
+                    <!-- Date Range -->
+                    <div class="mb-5">
+                        <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">기간</h3>
+                        <select id="date-filter" class="w-full p-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-sm outline-none dark:text-white">
+                            <option value="all">전체</option>
+                            <option value="7d">최근 7일</option>
+                            <option value="30d">최근 30일</option>
+                            <option value="1y">최근 1년</option>
+                        </select>
+                    </div>
+
+                    <!-- Sort -->
+                    <div class="mb-6">
+                        <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">정렬</h3>
+                        <select id="sort-filter" class="w-full p-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-sm outline-none dark:text-white">
+                            <option value="desc">최신순</option>
+                            <option value="asc">오래된순</option>
+                        </select>
+                    </div>
+
+                    <button id="download-csv" class="w-full py-2 px-4 bg-gray-900 hover:bg-gray-800 dark:bg-gray-100 dark:hover:bg-white dark:text-gray-900 text-white rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2">
+                        <i data-lucide="download" class="w-4 h-4"></i> 결과 CSV 다운로드
+                    </button>
+                </div>
+            </aside>
+
+            <!-- Feed List -->
+            <main class="lg:col-span-3">
+                <div class="mb-4 flex items-center justify-between">
+                    <p class="text-sm text-gray-500 dark:text-gray-400">
+                        검색 결과 <span id="result-count" class="font-semibold text-gray-900 dark:text-white">0</span>건
+                    </p>
+                </div>
+                
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-left text-gray-600 dark:text-gray-400">
+                            <thead class="text-xs text-gray-500 bg-gray-50/80 dark:bg-gray-700/50 dark:text-gray-400 border-b border-gray-100 dark:border-gray-700 whitespace-nowrap">
+                                <tr>
+                                    <th scope="col" class="px-4 py-4 font-medium text-center w-16">번호</th>
+                                    <th scope="col" class="px-4 py-4 font-medium text-center w-28">분류</th>
+                                    <th scope="col" class="px-4 py-4 font-medium">제목</th>
+                                    <th scope="col" class="px-4 py-4 font-medium text-center w-32">출처</th>
+                                    <th scope="col" class="px-4 py-4 font-medium text-center w-28">등록일</th>
+                                    <th scope="col" class="px-4 py-4 font-medium text-center w-20">링크</th>
+                                </tr>
+                            </thead>
+                            <tbody id="items-container" class="divide-y divide-gray-100 dark:divide-gray-700">
+                                <!-- Items will be rendered here -->
+                                <tr>
+                                    <td colspan="6" class="text-center py-12 text-gray-500" id="loading-indicator">
+                                        <i data-lucide="loader-2" class="w-8 h-8 mx-auto animate-spin mb-2"></i>
+                                        데이터를 불러오는 중...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="pagination" class="mt-8 flex justify-center gap-2 flex-wrap">
+                    <!-- Pagination will be rendered here -->
+                </div>
+            </main>
+        </div>
+        
+        <!-- Stats Section -->
+        <div class="mt-12 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+            <h2 class="text-lg font-semibold mb-6 flex items-center gap-2">
+                <i data-lucide="bar-chart-2" class="w-5 h-5"></i> 통계
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                    <canvas id="categoryChart"></canvas>
+                </div>
+                <div>
+                    <canvas id="timelineChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <footer class="mt-12 text-center text-sm text-gray-500 py-6 border-t border-gray-200 dark:border-gray-700">
+            <p>본 사이트는 KDI 경제정보센터 RSS를 수집·재배열한 비공식 아카이브입니다.</p>
+            <p class="mt-1">원문 저작권은 KDI 및 각 발행기관에 있습니다.</p>
+        </footer>
+    </div>
+
+    <script src="assets/js/app.js"></script>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

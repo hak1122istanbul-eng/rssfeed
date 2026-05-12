@@ -1,0 +1,26 @@
+name: Reclassify on Categories Change
+on:
+  push:
+    paths:
+      - 'docs/data/categories.json'
+
+jobs:
+  reclassify:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r scripts/requirements.txt
+      - run: python scripts/collector.py --reclassify
+      - name: Commit & Push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "actions@github.com"
+          git add docs/data/archive.json
+          git diff --cached --quiet || \
+            git commit -m "data: reclassify all items [skip ci]"
+          git push

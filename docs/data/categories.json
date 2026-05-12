@@ -1,0 +1,53 @@
+{
+  "version": "1.0",
+  "updated_at": "2026-05-12",
+  "categories": [
+    {
+      "id": "hydrogen",
+      "label": "수소",
+      "color": "#06B6D4",
+      "keywords": ["수소", "H2", "수소경제", "수전해", "연료전지"]
+    },
+    {
+      "id": "energy",
+      "label": "에너지",
+      "color": "#F59E0B",
+      "keywords": ["에너지", "전력", "재생에너지", "신재생", "태양광", "풍력", "원자력"]
+    },
+    {
+      "id": "battery",
+      "label": "이차전지",
+      "color": "#10B981",
+      "keywords": ["이차전지", "배터리", "리튬", "ESS", "전고체", "양극재", "음극재"]
+    },
+    {
+      "id": "steel",
+      "label": "철강",
+      "color": "#6B7280",
+      "keywords": ["철강", "제철", "포스코", "고로", "전기로"]
+    },
+    {
+      "id": "bio",
+      "label": "바이오",
+      "color": "#EC4899",
+      "keywords": ["바이오", "제약", "헬스케어", "백신", "신약", "의료기기"]
+    },
+    {
+      "id": "software",
+      "label": "소프트웨어",
+      "color": "#3B82F6",
+      "keywords": ["소프트웨어", "SW", "SaaS", "클라우드", "오픈소스"]
+    },
+    {
+      "id": "ai",
+      "label": "AI",
+      "color": "#8B5CF6",
+      "keywords": ["AI", "인공지능", "머신러닝", "딥러닝", "LLM", "생성형"]
+    }
+  ],
+  "matching_rule": {
+    "fields": ["title", "description"],
+    "case_sensitive": false,
+    "multi_match": true
+  }
+}
